@@ -10,13 +10,41 @@ public class RandomForestGenerator : MonoBehaviour
     public int forestSize = 25; // Overall size of the forest (a square of forestSize X forestSize).
     public int elementSpacing = 3; // The spacing between element placements. Basically grid size.
 
-    public GameObject forest_contrainer;
+    //public GameObject forest_contrainer;
     public Element[] elements;
+    public LayerMask track;
+    public GameObject _player;
+    private Vector3 playerLastPosition;
+    private List<MeshFilter> trees = new List<MeshFilter>();
+    private CombineMesh CombineTreeMesh;
 
+
+    private void Awake()
+    {
+        CombineTreeMesh = GameObject.FindObjectOfType<CombineMesh>();
+    }
     private void Start()
     {
-
+        playerLastPosition = new Vector3(170,10,192);
         // Loop through all the positions within our forest boundary.
+        
+
+    }
+    private void Update()
+    {
+
+        Vector3 temp = _player.transform.position - playerLastPosition;
+
+        if (temp.magnitude > 50)
+        {
+            //Debug.Log("away");
+            playerLastPosition = _player.transform.position;
+            spawnTrees(_player.transform.position);
+        }
+    }
+
+    private void spawnTrees(Vector3 playerPosition)
+    {
         for (int x = 0; x < forestSize; x += elementSpacing)
         {
             for (int z = 0; z < forestSize; z += elementSpacing)
@@ -39,13 +67,32 @@ public class RandomForestGenerator : MonoBehaviour
                         Vector3 rotation = new Vector3(Random.Range(0, 5f), Random.Range(0, 360f), Random.Range(0, 5f));
                         Vector3 scale = Vector3.one * Random.Range(0.75f, 1.25f);
 
+                        //Moved and edited the code to make more sence for your game
                         // Instantiate and place element in world.
-                        GameObject newElement = Instantiate(element.GetRandom());
-                        newElement.transform.SetParent(forest_contrainer.transform);
-                        newElement.transform.position = position + offset;
-                        newElement.transform.eulerAngles = rotation;
-                        newElement.transform.localScale = scale;
+                        //GameObject newElement = Instantiate(element.GetRandom());
+                        //newElement.transform.SetParent(forest_contrainer.transform);
+                        //newElement.transform.position = position + offset;
+                        //newElement.transform.position = forest_contrainer.transform.position + position + offset;
+                        //newElement.transform.eulerAngles = rotation;
+                        //newElement.transform.localScale = scale;
 
+
+
+                        Vector3 instantiateAtPosition = playerPosition + position + offset - new Vector3(0,0,25);
+                        Ray ray = new Ray(new Vector3(instantiateAtPosition.x, 10f, instantiateAtPosition.z), -Vector3.up);
+
+
+                        if (!Physics.SphereCast(ray, 2f, Mathf.Infinity, track))
+                        {
+
+                            // Instantiate and place element in world.
+                            GameObject newElement = Instantiate(element.GetRandom(), instantiateAtPosition, Quaternion.Euler(rotation));
+                            //newElement.transform.SetParent(forest_contrainer.transform);
+                            newElement.transform.localScale = scale;
+                            trees.Add(newElement.GetComponent<MeshFilter>());
+                           
+
+                        }
                         // Break out of this for loop to ensure we don't place another element at this position.
                         break;
 
@@ -54,7 +101,9 @@ public class RandomForestGenerator : MonoBehaviour
                 }
             }
         }
-
+        CombineTreeMesh.assignAllMesh(trees);
+        trees.Clear();
+        
     }
 
 }
