@@ -1,13 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CheckTreePlacement : MonoBehaviour
 {
-    public GameObject blackcurtain;
+    [SerializeField] GameObject blackcurtain;
+    [SerializeField] GameObject[] trees;
     
     private void OnCollisionEnter(Collision collision)
     {
         blackcurtain.SetActive(false);
+        setKinetic();
+    }
+
+    
+    private void setKinetic()
+    {
+        foreach (var item in trees)
+        {
+            
+            item.GetComponent<Rigidbody>().isKinematic = true;
+        }
     }
 }

@@ -1,6 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+
 
 public class carControllerOnWheels : MonoBehaviour
 {
@@ -10,38 +10,99 @@ public class carControllerOnWheels : MonoBehaviour
     private float steeringInput;
     private bool handbrakes;
     private bool gameActive = true;
-    
-    public WheelCollider frontLeftCollider, frontRightCollider;
-    public WheelCollider rearLeftCollider, rearRightCollider;
-    public Transform frontLeftT, frontRightT;
-    public Transform rearLeftT, rearRightT;
-    public float topSpeed = 300f;
-    public float maxSteerAngle = 30f;
-    public float motorForce = 50;
-    public float COM = 1f;
-    public bool frontWheelDrive = true;
-    public bool rearWheelDrive = false;
-    public float frontWheelForwardStiffness = 1f;
-    public float rearWheelForwardStiffness = 1f;
-    public float frontWheelSidewaysStiffness = 1f;
-    public float rearWheelSidewaysStiffness = 1f;
-    public float wheelMass = 50f;
-    public GameObject UI;
-    public GameObject UIscore;
+    private Transform frontLeftT, frontRightT;
+    private Transform rearLeftT, rearRightT;
+    private collisionTrigger collisionTriggerScript;
 
-    public void GetInput()
+    [SerializeField] WheelCollider frontLeftCollider, frontRightCollider;
+    [SerializeField] WheelCollider rearLeftCollider, rearRightCollider;
+    [SerializeField] GameObject wheel;
+    [SerializeField] float topSpeed = 1500.0f;
+    [SerializeField] float maxSteerAngle = 20f;
+    [SerializeField] float motorForce = 2000.0f;
+    [SerializeField] float COM = -3f;
+    [SerializeField] bool frontWheelDrive = true;
+    [SerializeField] bool rearWheelDrive = true;
+    [SerializeField] float frontWheelForwardStiffness = 3f;
+    [SerializeField] float rearWheelForwardStiffness = 3f;
+    [SerializeField] float frontWheelSidewaysStiffness = 3f;
+    [SerializeField] float rearWheelSidewaysStiffness = 3f;
+    [SerializeField] float wheelMass = 30f;
+    [SerializeField] float spring = 35000f;
+    [SerializeField] float damper = 2000f;
+    [SerializeField] float targetPosition = 0.4f;
+    [SerializeField] float advancedWheelRotation;
+    [SerializeField] float permittedTiltBeforeGameOver = 50.0f;
+    private float carTiltAngle;
+    private bool headlightStatus = false;
+
+    //make them organised
+    [SerializeField] bool ifplayingderby;
+    [SerializeField] ScoreAndOtherThings scoreAndOtherThings;
+    [SerializeField] ScoreAndOtherThings OnEnemyCarscoreAndOtherThings;
+    [SerializeField] TMP_Text text;
+    [SerializeField] buttonTouchControl brakes;
+    [SerializeField] Joystick joystick;
+    [SerializeField] float tiltSensitivity;
+    //private float frameConstant;
+    //private float steerFrameConstant;
+    private void GetInput()
     {
-        if (!gameActive) return;
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
+        if (!gameActive)
+        {
+            handbrakes = true;
+            return;
+        }
+        horizontalInput = Input.GetAxis("Horizontal");// * Time.deltaTime * 30f;
+        verticalInput = Input.GetAxisRaw("Vertical");// * Time.deltaTime * 30f; 
         handbrakes = Input.GetKey(KeyCode.Space);
+        if (Input.GetKeyDown(KeyCode.L))
+            toggleLight();
     }
 
+    private void joystickControls()
+    {
+        if (!gameActive)
+        {
+            handbrakes = true;
+            return;
+        }
+
+        verticalInput = joystick.Vertical;
+        horizontalInput = joystick.Horizontal;
+    }
+
+    private void joystickHandbrake()
+    {
+        if (!gameActive)
+        {
+            handbrakes = true;
+            return;
+        }
+        handbrakes = brakes.buttonPressed;
+        //Debug.Log(handbrakes);
+    }
+
+
+    private void toggleLight()
+    {
+        if (headlightStatus == false)
+        {
+            headlightStatus = true;
+            return;
+        }
+        if (headlightStatus == true)
+        {
+            headlightStatus = false;
+            return;
+        }
+    }
     private void Steer()
     {
         steeringInput = maxSteerAngle * horizontalInput;
-        frontLeftCollider.steerAngle = steeringInput;
-        frontRightCollider.steerAngle = steeringInput;
+        frontLeftCollider.steerAngle = steeringInput;// * steerFrameConstant;
+        frontRightCollider.steerAngle = steeringInput;// * steerFrameConstant;
+        //Debug.Log(horizontalInput);
     }
     private void Accelerate()
     {
@@ -49,14 +110,14 @@ public class carControllerOnWheels : MonoBehaviour
 
         if(frontWheelDrive == true & !handbrakes)
         {
-        frontLeftCollider.motorTorque = verticalInput * motorForce * topSpeedLimiter;
-        frontRightCollider.motorTorque = verticalInput * motorForce * topSpeedLimiter;
-
+            frontLeftCollider.motorTorque = verticalInput * motorForce * topSpeedLimiter;// * frameConstant;
+            frontRightCollider.motorTorque = verticalInput * motorForce * topSpeedLimiter;// * frameConstant;
+            
         }
         if(rearWheelDrive == true & !handbrakes)
         {
-            rearLeftCollider.motorTorque = verticalInput * motorForce * topSpeedLimiter;
-            rearRightCollider.motorTorque = verticalInput * motorForce * topSpeedLimiter;
+            rearLeftCollider.motorTorque = verticalInput * motorForce * topSpeedLimiter;// * frameConstant;
+            rearRightCollider.motorTorque = verticalInput * motorForce * topSpeedLimiter;// * frameConstant;
             
         }
     }
@@ -73,7 +134,7 @@ public class carControllerOnWheels : MonoBehaviour
     {
         Vector3 _pos;
         Quaternion _quat;
-        Vector3 faceDirection = face == "left" ? new Vector3(0, 90, 0) : new Vector3(0, -90, 0);
+        Vector3 faceDirection = face == "left" ? new Vector3(0, advancedWheelRotation, 0) : new Vector3(0, -advancedWheelRotation, 0);
 
         _collider.GetWorldPose(out _pos, out _quat);
 
@@ -88,6 +149,7 @@ public class carControllerOnWheels : MonoBehaviour
         rearRightCollider.brakeTorque = 2000f * handBrakesApplied;
         frontLeftCollider.brakeTorque = 1000f * handBrakesApplied;
         frontRightCollider.brakeTorque = 1000f * handBrakesApplied;
+        
     }
 
     private void setStiffness()
@@ -102,6 +164,27 @@ public class carControllerOnWheels : MonoBehaviour
         rearRightCollider.sidewaysFriction = calStiffness(rearRightCollider.sidewaysFriction, rearWheelSidewaysStiffness);
     }
 
+    private void springAndDamping()
+    {
+        JointSpring suspensionSpring = new JointSpring();
+        suspensionSpring.spring = spring;
+        suspensionSpring.damper = damper;
+        suspensionSpring.targetPosition = targetPosition;
+        frontLeftCollider.suspensionSpring = suspensionSpring;
+        frontRightCollider.suspensionSpring = suspensionSpring;
+        rearLeftCollider.suspensionSpring = suspensionSpring;
+        rearRightCollider.suspensionSpring = suspensionSpring;
+    }
+    private void placeTires()
+    {
+
+        frontLeftT = Instantiate(wheel, frontLeftCollider.transform.position, Quaternion.identity, frontLeftCollider.transform).transform;
+        frontRightT = Instantiate(wheel, frontRightCollider.transform.position, Quaternion.identity, frontRightCollider.transform).transform;
+        rearLeftT = Instantiate(wheel, rearLeftCollider.transform.position, Quaternion.identity, rearLeftCollider.transform).transform;
+        rearRightT = Instantiate(wheel, rearRightCollider.transform.position, Quaternion.identity, rearRightCollider.transform).transform;
+
+    }
+
     private WheelFrictionCurve calStiffness(WheelFrictionCurve curve,float stiffnessValue)
     {
         WheelFrictionCurve frictionCurve = curve;
@@ -109,14 +192,39 @@ public class carControllerOnWheels : MonoBehaviour
         return frictionCurve;
     }
 
-    //custom funtion just for this game
-    private void removeParent()
+    public bool gameStatus() //called by manageScene script
     {
-        frontLeftT.parent = null;
-        frontRightT.parent = null;
-        rearLeftT.parent = null;
-        rearRightT.parent = null;
+        return gameActive;
     }
+
+    public float getCurrentSpeed() //called by speedometer script
+    {
+        if (rb.velocity.sqrMagnitude > topSpeed)
+            return topSpeed;
+        else
+            return rb.velocity.sqrMagnitude;
+    }
+    public float getTopSpeed() //called by speedometer script
+    {
+        return topSpeed;
+    }
+
+    public bool[] lights()
+    {
+        bool[] temp = { handbrakes, headlightStatus };
+        return temp;
+    }
+
+    private void TiltAngle() 
+    {
+        carTiltAngle = transform.localRotation.eulerAngles.z;
+        if (carTiltAngle > permittedTiltBeforeGameOver && carTiltAngle < 360f - permittedTiltBeforeGameOver)
+        {
+            gameActive = false;
+
+        }
+    }
+
     private void setWheelMass()
     {
         frontLeftCollider.mass = wheelMass;
@@ -125,36 +233,54 @@ public class carControllerOnWheels : MonoBehaviour
         rearRightCollider.mass = wheelMass;
     }
 
-    
-    private void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        rb.centerOfMass = Vector3.up * COM;
-        setStiffness();
-        removeParent();
-        setWheelMass();
+        collisionTriggerScript = GetComponent<collisionTrigger>();
     }
 
+    private void Start()
+    {
+        rb.centerOfMass = Vector3.up * COM;
+        placeTires();
+        setStiffness();
+        setWheelMass();
+        springAndDamping();
+        //frameConstant = Time.deltaTime * 40f;
+        //steerFrameConstant = Time.deltaTime * 60f;
+    }
+    
     private void Update()
     {
-        var ang = transform.localRotation.eulerAngles.z;
+
+        GetInput(); // <-- enable for pc disable for mobile devices
+        //joystickControls();
+        //joystickHandbrake();
+
+        Steer();
         
-        if (ang > 50f && ang < 310f)
+        if (collisionTriggerScript.getCarHealth() < 3) gameActive = false;
+        
+        if (!ifplayingderby)
         {
-            gameActive = false;
-            UIscore.SetActive(false);
-            UI.SetActive(true);
+            TiltAngle();
+
+            if(OnEnemyCarscoreAndOtherThings.getTotalDistance() - scoreAndOtherThings.getTotalDistance() > 500)
+            {
+                gameActive = false;
+                text.text = "HE GOT AWAY...";
+
+            }
         }
-            
+
+        
+               
     }
     private void FixedUpdate()
-    {
-        
-        GetInput();
-        Steer();
+    {        
         updateWheelPoses();
         handbrake();
-        Accelerate();
+        if (gameActive) Accelerate();
     }
 
 }
