@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id,@string/default_web_client_id">
+  <string name="gcm_defaultSenderId" translatable="false">818355486037</string>
+  <string name="google_storage_bucket" translatable="false">fancycommunitygame.appspot.com</string>
+  <string name="project_id" translatable="false">fancycommunitygame</string>
+  <string name="google_api_key" translatable="false">AIzaSyCXrQ6_fk83FPLI1jCChC2iRF9GhcK3iD4</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCXrQ6_fk83FPLI1jCChC2iRF9GhcK3iD4</string>
+  <string name="google_app_id" translatable="false">1:818355486037:android:633155ad825ff2ce78c3dc</string>
+  <string name="default_web_client_id" translatable="false">818355486037-uact8lrhlvkohdp5gdcrafr9t3ketcjn.apps.googleusercontent.com</string>
+</resources>

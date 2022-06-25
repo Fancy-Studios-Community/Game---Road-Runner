@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "818355486037",
+    "project_id": "fancycommunitygame",
+    "storage_bucket": "fancycommunitygame.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:818355486037:android:633155ad825ff2ce78c3dc",
+        "android_client_info": {
+          "package_name": "com.FancyRoadRunner.Game"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "818355486037-uact8lrhlvkohdp5gdcrafr9t3ketcjn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXrQ6_fk83FPLI1jCChC2iRF9GhcK3iD4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "818355486037-uact8lrhlvkohdp5gdcrafr9t3ketcjn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
